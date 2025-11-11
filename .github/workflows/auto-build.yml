@@ -36,12 +36,19 @@ jobs:
           arch: x64
 
       - name: Build Aseprite
+        shell: pwsh
         run: |
           mkdir build
           cd build
           cmake "${{ github.workspace }}/src/aseprite" -G Ninja -DCMAKE_BUILD_TYPE=MinSizeRel -DLAF_BACKEND=skia -DSKIA_DIR="${{ github.workspace }}/src/skia" -DSKIA_LIBRARY_DIR="${{ github.workspace }}/src/skia/out/Release-x64" -DSKIA_LIBRARY="${{ github.workspace }}/src/skia/out/Release-x64/skia.lib"
           cmake --build . --config MinSizeRel --target aseprite
-          copy "C:/Windows/System32/libcrypto-3-x64.dll" ./bin
+
+          $bin = Join-Path $PWD 'bin'
+          New-Item -ItemType Directory -Force -Path $bin | Out-Null
+          $gitBin = Join-Path $env:ProgramFiles 'Git\usr\bin'
+          Copy-Item (Join-Path $gitBin 'libcrypto-3-x64.dll') $bin -Force
+          Copy-Item (Join-Path $gitBin 'libssl-3-x64.dll')    $bin -Force
+
 
       - name: Get version
         id: get_version
